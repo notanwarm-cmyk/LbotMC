@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>بوت ماينكرافت</title>
+<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --sky:#d6ecf5; --grass:#5d9b3a; --grass-d:#3f6e27; --dirt:#4a3424; --stone:#8d8d88;
+    --paper:#fbf8f1; --ink:#2a2018; --ok:#3f8f2b; --warn:#c98a12; --bad:#b53a2a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;
+    font-family:'Tajawal',system-ui,sans-serif;color:var(--ink);
+    background:linear-gradient(var(--sky) 0 70%, var(--grass) 70% 76%, var(--dirt) 76%);}
+  main{width:min(460px,100%);background:var(--paper);border:4px solid var(--ink);
+    box-shadow:8px 8px 0 var(--ink);padding:26px}
+  h1{margin:0 0 4px;font-size:26px;font-weight:800}
+  p.sub{margin:0 0 22px;color:#5b4d40}
+  .status{display:flex;align-items:center;gap:12px;padding:14px;border:3px solid var(--ink);background:#fff;margin-bottom:16px}
+  .dot{width:18px;height:18px;border:3px solid var(--ink);background:var(--stone);flex:none}
+  .dot.online{background:var(--ok)} .dot.connecting{background:var(--warn);animation:blink 1s steps(2) infinite}
+  .dot.offline{background:var(--bad)}
+  @keyframes blink{50%{opacity:.25}}
+  #stateText{font-weight:800;font-size:18px}
+  dl{margin:0 0 18px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px}
+  dt{color:#5b4d40} dd{margin:0;font-weight:700;direction:ltr;text-align:right;word-break:break-all}
+  .row{display:flex;gap:10px}
+  button{flex:1;font:inherit;font-weight:800;font-size:16px;padding:12px;cursor:pointer;
+    border:3px solid var(--ink);background:var(--grass);color:#fff;box-shadow:4px 4px 0 var(--ink)}
+  button.alt{background:#fff;color:var(--ink)}
+  button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+  button:focus-visible{outline:3px solid #1b5fd1;outline-offset:2px}
+  #err{margin-top:14px;color:var(--bad);font-size:14px;min-height:1.2em;direction:ltr;text-align:right}
+  @media (prefers-reduced-motion:reduce){.dot.connecting{animation:none}}
+</style>
+</head>
+<body>
+<main>
+  <h1>بوت ماينكرافت</h1>
+  <p class="sub">يدخل السيرفر تلقائياً أول ما تفتح الصفحة ويمشي ويتفادى الجدران.</p>
+
+  <div class="status"><span id="dot" class="dot connecting"></span><span id="stateText">جاري الاتصال...</span></div>
+
+  <dl>
+    <dt>السيرفر</dt><dd id="host">lhubx.funserver.top</dd>
+    <dt>اسم البوت</dt><dd id="name">Sub_To-Lynox</dd>
+    <dt>الموقع</dt><dd id="pos">—</dd>
+  </dl>
+
+  <div class="row">
+    <button id="joinBtn">إعادة الدخول</button>
+    <button id="stopBtn" class="alt">إيقاف البوت</button>
+  </div>
+  <div id="err"></div>
+</main>
+
+<script>
+  // لو الموقع على Netlify حط رابط Render هنا، مثال: 'https://my-bot.onrender.com'
+  // لو الموقع على نفس سيرفر Render خليه فاضي.
+  const BACKEND = '';
+
+  const $ = (id) => document.getElementById(id);
+  const TEXT = { online: 'البوت داخل السيرفر', connecting: 'جاري الدخول...', offline: 'البوت غير متصل' };
+
+  async function api(path, method = 'GET') {
+    const r = await fetch(BACKEND + path, { method });
+    return r.json();
+  }
+
+  function render(s) {
+    $('dot').className = 'dot ' + s.state;
+    $('stateText').textContent = TEXT[s.state] || s.state;
+    $('host').textContent = s.host;
+    $('name').textContent = s.name;
+    $('pos').textContent = s.position ? `${s.position.x}, ${s.position.y}, ${s.position.z}` : '—';
+    $('err').textContent = s.error || '';
+  }
+
+  async function join() {
+    try { render(await api('/api/join', 'POST')); }
+    catch { $('stateText').textContent = 'السيرفر يصحى، انتظر قليلاً...'; }
+  }
+
+  $('joinBtn').onclick = join;
+  $('stopBtn').onclick = async () => { try { render(await api('/api/stop', 'POST')); } catch {} };
+
+  join(); // دخول مباشر عند فتح الصفحة
+  setInterval(async () => {
+    try { render(await api('/api/status')); }
+    catch { $('stateText').textContent = 'السيرفر يصحى، انتظر قليلاً...'; }
+  }, 3000);
+</script>
+</body>
+</html>
