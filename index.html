@@ -3,94 +3,149 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>بوت ماينكرافت</title>
+<title>بوت الدويل</title>
 <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --sky:#d6ecf5; --grass:#5d9b3a; --grass-d:#3f6e27; --dirt:#4a3424; --stone:#8d8d88;
-    --paper:#fbf8f1; --ink:#2a2018; --ok:#3f8f2b; --warn:#c98a12; --bad:#b53a2a;
-  }
+  :root{--sky:#d6ecf5;--grass:#5d9b3a;--dirt:#4a3424;--stone:#8d8d88;--paper:#fbf8f1;--ink:#2a2018;
+    --ok:#3f8f2b;--warn:#c98a12;--bad:#b53a2a;--fight:#8a2fb0}
   *{box-sizing:border-box}
   body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;
     font-family:'Tajawal',system-ui,sans-serif;color:var(--ink);
-    background:linear-gradient(var(--sky) 0 70%, var(--grass) 70% 76%, var(--dirt) 76%);}
-  main{width:min(460px,100%);background:var(--paper);border:4px solid var(--ink);
-    box-shadow:8px 8px 0 var(--ink);padding:26px}
-  h1{margin:0 0 4px;font-size:26px;font-weight:800}
-  p.sub{margin:0 0 22px;color:#5b4d40}
-  .status{display:flex;align-items:center;gap:12px;padding:14px;border:3px solid var(--ink);background:#fff;margin-bottom:16px}
-  .dot{width:18px;height:18px;border:3px solid var(--ink);background:var(--stone);flex:none}
-  .dot.online{background:var(--ok)} .dot.connecting{background:var(--warn);animation:blink 1s steps(2) infinite}
+    background:linear-gradient(var(--sky) 0 70%,var(--grass) 70% 76%,var(--dirt) 76%)}
+  main{width:min(640px,100%);background:var(--paper);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:24px}
+  h1{margin:0 0 4px;font-size:28px;font-weight:800}
+  p.sub{margin:0 0 16px;color:#5b4d40;line-height:1.7}
+  .card{background:#fff;border:3px solid var(--ink);padding:12px;margin-bottom:12px}
+  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px;margin-top:6px}
+  .row:first-child{margin-top:0}
+  .val{font-weight:800;direction:ltr;word-break:break-all}
+  .top{display:flex;align-items:center;gap:10px}
+  .dot{width:16px;height:16px;border:3px solid var(--ink);background:var(--stone);flex:none}
+  .dot.online{background:var(--ok)} .dot.fight{background:var(--fight)}
+  .dot.connecting{background:var(--warn);animation:blink 1s steps(2) infinite}
   .dot.offline{background:var(--bad)}
   @keyframes blink{50%{opacity:.25}}
-  #stateText{font-weight:800;font-size:18px}
-  dl{margin:0 0 18px;display:grid;grid-template-columns:auto 1fr;gap:8px 14px}
-  dt{color:#5b4d40} dd{margin:0;font-weight:700;direction:ltr;text-align:right;word-break:break-all}
-  .row{display:flex;gap:10px}
-  button{flex:1;font:inherit;font-weight:800;font-size:16px;padding:12px;cursor:pointer;
-    border:3px solid var(--ink);background:var(--grass);color:#fff;box-shadow:4px 4px 0 var(--ink)}
-  button.alt{background:#fff;color:var(--ink)}
-  button:active{transform:translate(3px,3px);box-shadow:1px 1px 0 var(--ink)}
+  .badge{font-weight:800;border:2px solid var(--ink);padding:0 8px;background:#f0e6d2}
+  #queue{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
+  #queue li{direction:ltr;font-weight:700;border:2px solid var(--ink);background:#f0e6d2;padding:2px 8px}
+  .none{color:#7a6a5a;font-size:14px}
+  button{font:inherit;font-weight:800;font-size:15px;padding:8px 14px;cursor:pointer;border:3px solid var(--ink);
+    background:var(--grass);color:#fff;box-shadow:3px 3px 0 var(--ink)}
+  button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
   button:focus-visible{outline:3px solid #1b5fd1;outline-offset:2px}
-  #err{margin-top:14px;color:var(--bad);font-size:14px;min-height:1.2em;direction:ltr;text-align:right}
+  #console{height:200px;overflow-y:auto;background:#111;color:#ddd;border:3px solid var(--ink);
+    font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;padding:10px 12px}
+  #console div{unicode-bidi:plaintext;text-align:start;word-break:break-word}
+  .l-ok{color:#55ff55}.l-warn{color:#ffaa00}.l-err{color:#ff5555}.l-info{color:#aaa}.empty{color:#777}
+  .foot{margin:14px 0 0;font-size:13px;line-height:1.7;color:#5b4d40}
   @media (prefers-reduced-motion:reduce){.dot.connecting{animation:none}}
 </style>
 </head>
 <body>
 <main>
-  <h1>بوت ماينكرافت</h1>
-  <p class="sub">يدخل السيرفر تلقائياً أول ما تفتح الصفحة ويمشي ويتفادى الجدران.</p>
+  <h1>بوت الدويل</h1>
+  <p class="sub">ادخل السيرفر وأرسل للبوت طلب <b dir="ltr">/duel</b> وسيقبله تلقائياً ويقاتلك. إذا كان في دويل مع شخص آخر ستدخل طابور الانتظار وسيقبل طلبك عند دورك.</p>
 
-  <div class="status"><span id="dot" class="dot connecting"></span><span id="stateText">جاري الاتصال...</span></div>
-
-  <dl>
-    <dt>السيرفر</dt><dd id="host">lhubx.funserver.top</dd>
-    <dt>اسم البوت</dt><dd id="name">Sub_To-Lynox</dd>
-    <dt>الموقع</dt><dd id="pos">—</dd>
-  </dl>
-
-  <div class="row">
-    <button id="joinBtn">إعادة الدخول</button>
-    <button id="stopBtn" class="alt">إيقاف البوت</button>
+  <div class="card">
+    <div class="row">
+      <span>السيرفر</span>
+      <span class="val"><span id="host">...</span> <button id="copyBtn" type="button">نسخ</button></span>
+    </div>
+    <div class="row"><span>اسم البوت</span><span class="val" id="name">...</span></div>
+    <div class="row"><span>الحالة</span>
+      <span class="top"><span id="pip" class="dot"></span><strong id="statusText">جارٍ الاتصال...</strong></span>
+    </div>
+    <div class="row"><span>الدويل</span><span class="badge" id="duelText">—</span></div>
   </div>
-  <div id="err"></div>
+
+  <div class="card">
+    <div class="row"><span>طابور الانتظار</span><span class="badge" id="qCount">0</span></div>
+    <ul id="queue"><li class="none" style="border:0;background:none">لا أحد ينتظر</li></ul>
+  </div>
+
+  <div id="console" aria-live="polite"><div class="empty">سجل الحالة سيظهر هنا.</div></div>
+  <p class="foot">هذه الصفحة للمتابعة فقط، والبوت يعمل من الخادم حتى لو أغلقتها. البوت حساب واحد، لذلك يقاتل لاعباً واحداً في كل مرة.</p>
 </main>
 
 <script>
-  // لو الموقع على Netlify حط رابط Render هنا، مثال: 'https://my-bot.onrender.com'
-  // لو الموقع على نفس سيرفر Render خليه فاضي.
-  const BACKEND = '';
+  // اتركه فارغاً إذا كان server.js هو الذي يعرض هذه الصفحة. لو رفعتها على Netlify مثلاً، ضع رابط Render هنا.
+  const BACKEND_URL = '';
 
   const $ = (id) => document.getElementById(id);
-  const TEXT = { online: 'البوت داخل السيرفر', connecting: 'جاري الدخول...', offline: 'البوت غير متصل' };
+  const labels = { offline: 'غير متصل، جارٍ إعادة المحاولة...', connecting: 'جارٍ دخول البوت...', online: 'البوت داخل السيرفر' };
 
-  async function api(path, method = 'GET') {
-    const r = await fetch(BACKEND + path, { method });
-    return r.json();
+  function addLog(text, level) {
+    const con = $('console');
+    const first = con.firstElementChild;
+    if (first && first.classList.contains('empty')) con.innerHTML = '';
+    const d = document.createElement('div');
+    d.className = 'l-' + (level || 'info');
+    d.textContent = text;
+    con.appendChild(d);
+    while (con.children.length > 100) con.removeChild(con.firstChild);
+    con.scrollTop = con.scrollHeight;
   }
 
-  function render(s) {
-    $('dot').className = 'dot ' + s.state;
-    $('stateText').textContent = TEXT[s.state] || s.state;
-    $('host').textContent = s.host;
-    $('name').textContent = s.name;
-    $('pos').textContent = s.position ? `${s.position.x}, ${s.position.y}, ${s.position.z}` : '—';
-    $('err').textContent = s.error || '';
+  function renderQueue(list) {
+    const ul = $('queue');
+    ul.innerHTML = '';
+    $('qCount').textContent = list.length;
+    if (!list.length) {
+      const li = document.createElement('li');
+      li.className = 'none';
+      li.style.cssText = 'border:0;background:none';
+      li.textContent = 'لا أحد ينتظر';
+      ul.appendChild(li);
+      return;
+    }
+    list.forEach((n, i) => {
+      const li = document.createElement('li');
+      li.textContent = (i + 1) + '. ' + n;
+      ul.appendChild(li);
+    });
   }
 
-  async function join() {
-    try { render(await api('/api/join', 'POST')); }
-    catch { $('stateText').textContent = 'السيرفر يصحى، انتظر قليلاً...'; }
+  function renderStatus(m) {
+    $('host').textContent = m.host;
+    $('name').textContent = m.name;
+    const cls = m.state === 'online' ? (m.inDuel ? 'fight' : 'online') : m.state;
+    $('pip').className = 'dot ' + cls;
+    $('statusText').textContent = labels[m.state] || m.state;
+    $('duelText').textContent = m.state === 'online' ? (m.inDuel ? 'في دويل الآن' : 'جاهز لطلبك') : '—';
+    renderQueue(Array.isArray(m.queue) ? m.queue : []);
   }
 
-  $('joinBtn').onclick = join;
-  $('stopBtn').onclick = async () => { try { render(await api('/api/stop', 'POST')); } catch {} };
+  function wsUrl() {
+    let u = BACKEND_URL.trim();
+    if (!u && /^https?:/.test(location.origin)) u = location.origin;
+    return u.replace(/^http/i, 'ws');
+  }
 
-  join(); // دخول مباشر عند فتح الصفحة
-  setInterval(async () => {
-    try { render(await api('/api/status')); }
-    catch { $('stateText').textContent = 'السيرفر يصحى، انتظر قليلاً...'; }
-  }, 3000);
+  function connect() {
+    const url = wsUrl();
+    if (!url) { $('statusText').textContent = 'ضع عنوان الخادم في BACKEND_URL'; return; }
+    const ws = new WebSocket(url);
+    ws.onmessage = (e) => {
+      let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+      if (m.type === 'status') renderStatus(m);
+      else if (m.type === 'log') addLog(m.text, m.level);
+    };
+    ws.onclose = () => {
+      $('pip').className = 'dot';
+      $('statusText').textContent = 'جارٍ إعادة الاتصال بالموقع...';
+      setTimeout(connect, 3000);
+    };
+    ws.onerror = () => {};
+  }
+
+  $('copyBtn').onclick = async () => {
+    const t = $('host').textContent;
+    try { await navigator.clipboard.writeText(t); $('copyBtn').textContent = 'تم'; }
+    catch (e) { $('copyBtn').textContent = '✗'; }
+    setTimeout(() => { $('copyBtn').textContent = 'نسخ'; }, 1500);
+  };
+
+  connect();
 </script>
 </body>
 </html>

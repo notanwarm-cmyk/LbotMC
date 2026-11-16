@@ -10,6 +10,8 @@
 const http = require('http');
 const dns = require('dns').promises;
 const net = require('net');
+const fs = require('fs');
+const path = require('path');
 const { WebSocketServer } = require('ws');
 const mineflayer = require('mineflayer');
 const { pathfinder, Movements, goals } = require('mineflayer-pathfinder');
@@ -31,10 +33,11 @@ let attempts = 0;
 let afk = null;
 let combat = null;
 let inDuel = false;
+let queue = [];
 const logs = [];
 const clients = new Set();
 
-const statusMsg = () => ({ type: 'status', state, name: NAME, host: HOST });
+const statusMsg = () => ({ type: 'status', state, name: NAME, host: HOST, inDuel, queue: queue.slice() });
 function broadcast(obj) {
   const t = JSON.stringify(obj);
   for (const c of clients) if (c.readyState === 1) c.send(t);
@@ -45,7 +48,8 @@ function log(text, level = 'info') {
   if (logs.length > 60) logs.shift();
   broadcast(e);
 }
-function setState(s) { state = s; broadcast(statusMsg()); }
+function pushStatus() { broadcast(statusMsg()); }
+function setState(s) { state = s; pushStatus(); }
 function reasonText(r) { return String(typeof r === 'string' ? r : JSON.stringify(r)).slice(0, 250); }
 
 // ======================= أدوات =======================
@@ -437,6 +441,8 @@ function initCombat(b) {
     smash = { phase: 'idle', since: 0, readyAt: 0 };
     unfollow(); clearMove();
     log(reason, 'info');
+    pushStatus();
+    nextInQueue();
   }
 
   async function fight() {
@@ -480,7 +486,43 @@ function initCombat(b) {
     return null;
   }
 
+  function acceptNow(name) {
+    const now = Date.now();
+    lastAccept = { name, at: now };
+    b.chat('/duel accept ' + name);
+    duel = { name, since: now, lastSeen: now };
+    inDuel = true;
+    log('قبلت طلب الدويل من ' + name, 'ok');
+    pushStatus();
+  }
+  function enqueue(name) {
+    if (duel && duel.name.toLowerCase() === name.toLowerCase()) return;
+    if (queue.some((q) => q.toLowerCase() === name.toLowerCase())) return;
+    if (queue.length >= 10) return;
+    queue.push(name);
+    log(name + ' انضم للطابور (رقم ' + queue.length + ')', 'warn');
+    pushStatus();
+    b.chat('/msg ' + name + ' I am in a duel right now. You are #' + queue.length + ' in the queue. I will accept your request on your turn (if it expired, send /duel again).');
+  }
+  function nextInQueue() {
+    const next = queue.shift();
+    pushStatus();
+    if (!next) return;
+    setTimeout(() => {
+      if (duel) { queue.unshift(next); pushStatus(); return; }
+      acceptNow(next);
+    }, 2500);
+  }
+
+  const END = /won|winner|victory|defeated|killed|ended|finished|فاز|انتهى/i;
+  function onEndMsg(msg) {
+    if (!duel || Date.now() - duel.since < 5000) return;
+    if (!END.test(msg) || /accept|start/i.test(msg)) return;
+    if (msg.toLowerCase().includes(duel.name.toLowerCase())) endDuel('انتهى الدويل');
+  }
+
   function onMsg(msg) {
+    onEndMsg(msg);
     if (!msg || !/duel/i.test(msg)) return;
     let name = null;
     const m = msg.match(/\/duel\s+accept\s+([A-Za-z0-9_]{3,16})/i);
@@ -490,24 +532,25 @@ function initCombat(b) {
       name = findPlayerName(msg);
     }
     if (!name || name.toLowerCase() === b.username.toLowerCase()) return;
-    if (duel && getTarget() && Date.now() - duel.lastSeen < 5000) return; // وسط قتال
+    if (duel && getTarget() && Date.now() - duel.lastSeen < 5000) { enqueue(name); return; } // وسط قتال
     clearTimeout(acceptTimer);
     acceptTimer = setTimeout(() => {
       const now = Date.now();
       if (lastAccept.name === name && now - lastAccept.at < 2500) return;
-      lastAccept = { name, at: now };
-      b.chat('/duel accept ' + name); // آخر شخص أرسل طلباً هو اللي يُقبل
-      duel = { name, since: now, lastSeen: now };
-      inDuel = true;
-      log('قبلت طلب الدويل من ' + name, 'ok');
+      acceptNow(name); // آخر شخص أرسل طلباً هو اللي يُقبل
     }, 700);
   }
 
   b.on('messagestr', onMsg);
   b.on('death', () => endDuel('مات البوت، انتهى الدويل'));
+  b.on('entityDead', (e) => {
+    if (duel && e && e.type === 'player' && e.username && e.username.toLowerCase() === duel.name.toLowerCase()) {
+      setTimeout(() => endDuel('مات الخصم، انتهى الدويل'), 1500);
+    }
+  });
   const timer = setInterval(tick, 50);
   return {
-    stop() { clearInterval(timer); clearTimeout(acceptTimer); inDuel = false; }
+    stop() { clearInterval(timer); clearTimeout(acceptTimer); inDuel = false; queue = []; }
   };
 }
 
@@ -594,6 +637,10 @@ async function startBot() {
   }
 }
 
+function loadPage() {
+  try { return fs.readFileSync(path.join(__dirname, 'index.html'), 'utf8'); } catch (e) { return PAGE; }
+}
+
 const server = http.createServer((req, res) => {
   startBot();
   if (req.url === '/health') {
@@ -602,7 +649,7 @@ const server = http.createServer((req, res) => {
     return;
   }
   res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-  res.end(PAGE);
+  res.end(loadPage());
 });
 
 const wss = new WebSocketServer({ server, maxPayload: 1024 });

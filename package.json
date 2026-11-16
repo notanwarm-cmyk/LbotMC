@@ -1,12 +1,18 @@
 {
   "name": "mc-bot-site",
   "version": "1.0.0",
+  "private": true,
   "main": "server.js",
-  "scripts": { "start": "node server.js" },
-  "engines": { "node": ">=18" },
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": "22.x"
+  },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "mineflayer": "^4.23.0"
+    "mineflayer": "^4.23.0",
+    "mineflayer-pathfinder": "^2.4.5",
+    "vec3": "^0.1.10",
+    "ws": "^8.18.0"
   }
 }
