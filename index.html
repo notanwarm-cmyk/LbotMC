@@ -3,149 +3,119 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>بوت الدويل</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
+<title>بوت ماينكرافت</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;600&family=Reem+Kufi:wght@600&display=swap" rel="stylesheet">
 <style>
-  :root{--sky:#d6ecf5;--grass:#5d9b3a;--dirt:#4a3424;--stone:#8d8d88;--paper:#fbf8f1;--ink:#2a2018;
-    --ok:#3f8f2b;--warn:#c98a12;--bad:#b53a2a;--fight:#8a2fb0}
-  *{box-sizing:border-box}
-  body{margin:0;min-height:100vh;display:grid;place-items:center;padding:20px;
-    font-family:'Tajawal',system-ui,sans-serif;color:var(--ink);
-    background:linear-gradient(var(--sky) 0 70%,var(--grass) 70% 76%,var(--dirt) 76%)}
-  main{width:min(640px,100%);background:var(--paper);border:4px solid var(--ink);box-shadow:8px 8px 0 var(--ink);padding:24px}
-  h1{margin:0 0 4px;font-size:28px;font-weight:800}
-  p.sub{margin:0 0 16px;color:#5b4d40;line-height:1.7}
-  .card{background:#fff;border:3px solid var(--ink);padding:12px;margin-bottom:12px}
-  .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:16px;margin-top:6px}
-  .row:first-child{margin-top:0}
-  .val{font-weight:800;direction:ltr;word-break:break-all}
-  .top{display:flex;align-items:center;gap:10px}
-  .dot{width:16px;height:16px;border:3px solid var(--ink);background:var(--stone);flex:none}
-  .dot.online{background:var(--ok)} .dot.fight{background:var(--fight)}
-  .dot.connecting{background:var(--warn);animation:blink 1s steps(2) infinite}
-  .dot.offline{background:var(--bad)}
-  @keyframes blink{50%{opacity:.25}}
-  .badge{font-weight:800;border:2px solid var(--ink);padding:0 8px;background:#f0e6d2}
-  #queue{margin:8px 0 0;padding:0;list-style:none;display:flex;flex-wrap:wrap;gap:6px}
-  #queue li{direction:ltr;font-weight:700;border:2px solid var(--ink);background:#f0e6d2;padding:2px 8px}
-  .none{color:#7a6a5a;font-size:14px}
-  button{font:inherit;font-weight:800;font-size:15px;padding:8px 14px;cursor:pointer;border:3px solid var(--ink);
-    background:var(--grass);color:#fff;box-shadow:3px 3px 0 var(--ink)}
-  button:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink)}
-  button:focus-visible{outline:3px solid #1b5fd1;outline-offset:2px}
-  #console{height:200px;overflow-y:auto;background:#111;color:#ddd;border:3px solid var(--ink);
-    font:13px/1.6 ui-monospace,Menlo,Consolas,monospace;padding:10px 12px}
-  #console div{unicode-bidi:plaintext;text-align:start;word-break:break-word}
-  .l-ok{color:#55ff55}.l-warn{color:#ffaa00}.l-err{color:#ff5555}.l-info{color:#aaa}.empty{color:#777}
-  .foot{margin:14px 0 0;font-size:13px;line-height:1.7;color:#5b4d40}
-  @media (prefers-reduced-motion:reduce){.dot.connecting{animation:none}}
+  :root { --dirt: #4a3322; --panel: #c6c6c6; --ink: #373737; --ok: #55ff55; --warn: #ffaa00; --err: #ff5555; color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body {
+    font-family: "IBM Plex Sans Arabic", system-ui, sans-serif;
+    color: var(--ink);
+    background-color: var(--dirt);
+    background-image:
+      linear-gradient(45deg, rgba(0,0,0,.16) 25%, transparent 25%, transparent 75%, rgba(0,0,0,.16) 75%),
+      linear-gradient(45deg, rgba(255,255,255,.04) 25%, transparent 25%, transparent 75%, rgba(255,255,255,.04) 75%);
+    background-size: 32px 32px;
+    background-position: 0 0, 16px 16px;
+    padding: max(20px, env(safe-area-inset-top)) 14px max(24px, env(safe-area-inset-bottom));
+    display: flex; justify-content: center;
+  }
+  main {
+    width: 100%; max-width: 560px; margin: auto 0;
+    background: var(--panel); padding: 22px 20px 20px;
+    box-shadow: inset 4px 4px 0 #fff, inset -4px -4px 0 #555, 0 0 0 4px #000, 0 10px 0 4px rgba(0,0,0,.35);
+  }
+  h1 {
+    font-family: "Reem Kufi", "IBM Plex Sans Arabic", sans-serif; font-weight: 600;
+    font-size: clamp(26px, 7vw, 36px); line-height: 1.2; margin: 0 0 6px; text-shadow: 2px 2px 0 #eee;
+  }
+  .lead { margin: 0 0 18px; font-size: 15px; line-height: 1.7; color: #4a4a4a; }
+  .info { display: grid; gap: 10px; margin: 0 0 6px; }
+  .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; background: #1a1a1a; box-shadow: inset 0 0 0 2px #8b8b8b; padding: 12px; color: #fff; }
+  .row span:first-child { color: #aaa; font-size: 14px; }
+  .row b { direction: ltr; unicode-bidi: plaintext; font-size: 16px; font-weight: 600; word-break: break-all; }
+  .status { display: flex; align-items: center; gap: 10px; margin: 20px 0 8px; font-weight: 600; font-size: 16px; }
+  .pip { width: 14px; height: 14px; background: #777; box-shadow: 0 0 0 2px #000; flex: none; }
+  .pip.connecting { background: #e8b339; animation: blink 1s steps(2) infinite; }
+  .pip.online { background: #55c52e; }
+  @keyframes blink { 50% { opacity: .25; } }
+  @media (prefers-reduced-motion: reduce) { .pip.connecting { animation: none; } }
+  #console {
+    height: 200px; overflow-y: auto; background: #000; color: #ddd;
+    font: 13px/1.6 ui-monospace, Menlo, Consolas, monospace; padding: 10px 12px; box-shadow: 0 0 0 2px #8b8b8b;
+  }
+  #console div { unicode-bidi: plaintext; text-align: start; word-break: break-word; }
+  .l-ok { color: var(--ok); } .l-warn { color: var(--warn); } .l-err { color: var(--err); } .l-info { color: #aaa; }
+  .empty { color: #777; }
+  .foot { margin: 16px 0 0; font-size: 13px; line-height: 1.7; color: #555; }
 </style>
 </head>
 <body>
 <main>
-  <h1>بوت الدويل</h1>
-  <p class="sub">ادخل السيرفر وأرسل للبوت طلب <b dir="ltr">/duel</b> وسيقبله تلقائياً ويقاتلك. إذا كان في دويل مع شخص آخر ستدخل طابور الانتظار وسيقبل طلبك عند دورك.</p>
+  <h1>بوت ماينكرافت</h1>
+  <p class="lead">البوت يدخل السيرفر تلقائياً ويبقى فيه، وإذا انقطع يرجع بنفسه.</p>
 
-  <div class="card">
-    <div class="row">
-      <span>السيرفر</span>
-      <span class="val"><span id="host">...</span> <button id="copyBtn" type="button">نسخ</button></span>
-    </div>
-    <div class="row"><span>اسم البوت</span><span class="val" id="name">...</span></div>
-    <div class="row"><span>الحالة</span>
-      <span class="top"><span id="pip" class="dot"></span><strong id="statusText">جارٍ الاتصال...</strong></span>
-    </div>
-    <div class="row"><span>الدويل</span><span class="badge" id="duelText">—</span></div>
+  <div class="info">
+    <div class="row"><span>السيرفر</span><b id="host">...</b></div>
+    <div class="row"><span>اسم البوت</span><b id="name">...</b></div>
   </div>
 
-  <div class="card">
-    <div class="row"><span>طابور الانتظار</span><span class="badge" id="qCount">0</span></div>
-    <ul id="queue"><li class="none" style="border:0;background:none">لا أحد ينتظر</li></ul>
-  </div>
-
+  <div class="status"><span id="pip" class="pip"></span><span id="statusText">جارٍ الاتصال بالموقع...</span></div>
   <div id="console" aria-live="polite"><div class="empty">سجل الحالة سيظهر هنا.</div></div>
-  <p class="foot">هذه الصفحة للمتابعة فقط، والبوت يعمل من الخادم حتى لو أغلقتها. البوت حساب واحد، لذلك يقاتل لاعباً واحداً في كل مرة.</p>
+  <p class="foot">هذه الصفحة للمتابعة فقط، والبوت يعمل من الخادم حتى لو أغلقتها.</p>
 </main>
 
 <script>
-  // اتركه فارغاً إذا كان server.js هو الذي يعرض هذه الصفحة. لو رفعتها على Netlify مثلاً، ضع رابط Render هنا.
-  const BACKEND_URL = '';
+// اتركه فارغاً إذا كان server.js هو الذي يعرض هذه الصفحة. غيّره فقط لو رفعت الصفحة في مكان آخر.
+const BACKEND_URL = '';
 
-  const $ = (id) => document.getElementById(id);
-  const labels = { offline: 'غير متصل، جارٍ إعادة المحاولة...', connecting: 'جارٍ دخول البوت...', online: 'البوت داخل السيرفر' };
+const $ = (id) => document.getElementById(id);
+const labels = { offline: 'البوت غير متصل، جارٍ إعادة المحاولة...', connecting: 'جارٍ دخول البوت...', online: 'البوت داخل السيرفر' };
 
-  function addLog(text, level) {
-    const con = $('console');
-    const first = con.firstElementChild;
-    if (first && first.classList.contains('empty')) con.innerHTML = '';
-    const d = document.createElement('div');
-    d.className = 'l-' + (level || 'info');
-    d.textContent = text;
-    con.appendChild(d);
-    while (con.children.length > 100) con.removeChild(con.firstChild);
-    con.scrollTop = con.scrollHeight;
-  }
+function addLog(text, level) {
+  const con = $('console');
+  const first = con.firstElementChild;
+  if (first && first.classList.contains('empty')) con.innerHTML = '';
+  const d = document.createElement('div');
+  d.className = 'l-' + (level || 'info');
+  d.textContent = text;
+  con.appendChild(d);
+  while (con.children.length > 100) con.removeChild(con.firstChild);
+  con.scrollTop = con.scrollHeight;
+}
 
-  function renderQueue(list) {
-    const ul = $('queue');
-    ul.innerHTML = '';
-    $('qCount').textContent = list.length;
-    if (!list.length) {
-      const li = document.createElement('li');
-      li.className = 'none';
-      li.style.cssText = 'border:0;background:none';
-      li.textContent = 'لا أحد ينتظر';
-      ul.appendChild(li);
-      return;
+function wsUrl() {
+  let u = BACKEND_URL.trim();
+  if (!u && /^https?:/.test(location.origin)) u = location.origin;
+  return u.replace(/^http/i, 'ws');
+}
+
+function connect() {
+  const url = wsUrl();
+  if (!url) { $('statusText').textContent = 'ضع عنوان الخادم في BACKEND_URL'; return; }
+  const ws = new WebSocket(url);
+  ws.onmessage = (e) => {
+    let m; try { m = JSON.parse(e.data); } catch (err) { return; }
+    if (m.type === 'status') {
+      $('host').textContent = m.host;
+      $('name').textContent = m.name;
+      $('pip').className = 'pip ' + (m.state === 'offline' ? '' : m.state);
+      $('statusText').textContent = labels[m.state] || m.state;
+    } else if (m.type === 'log') {
+      addLog(m.text, m.level);
     }
-    list.forEach((n, i) => {
-      const li = document.createElement('li');
-      li.textContent = (i + 1) + '. ' + n;
-      ul.appendChild(li);
-    });
-  }
-
-  function renderStatus(m) {
-    $('host').textContent = m.host;
-    $('name').textContent = m.name;
-    const cls = m.state === 'online' ? (m.inDuel ? 'fight' : 'online') : m.state;
-    $('pip').className = 'dot ' + cls;
-    $('statusText').textContent = labels[m.state] || m.state;
-    $('duelText').textContent = m.state === 'online' ? (m.inDuel ? 'في دويل الآن' : 'جاهز لطلبك') : '—';
-    renderQueue(Array.isArray(m.queue) ? m.queue : []);
-  }
-
-  function wsUrl() {
-    let u = BACKEND_URL.trim();
-    if (!u && /^https?:/.test(location.origin)) u = location.origin;
-    return u.replace(/^http/i, 'ws');
-  }
-
-  function connect() {
-    const url = wsUrl();
-    if (!url) { $('statusText').textContent = 'ضع عنوان الخادم في BACKEND_URL'; return; }
-    const ws = new WebSocket(url);
-    ws.onmessage = (e) => {
-      let m; try { m = JSON.parse(e.data); } catch (err) { return; }
-      if (m.type === 'status') renderStatus(m);
-      else if (m.type === 'log') addLog(m.text, m.level);
-    };
-    ws.onclose = () => {
-      $('pip').className = 'dot';
-      $('statusText').textContent = 'جارٍ إعادة الاتصال بالموقع...';
-      setTimeout(connect, 3000);
-    };
-    ws.onerror = () => {};
-  }
-
-  $('copyBtn').onclick = async () => {
-    const t = $('host').textContent;
-    try { await navigator.clipboard.writeText(t); $('copyBtn').textContent = 'تم'; }
-    catch (e) { $('copyBtn').textContent = '✗'; }
-    setTimeout(() => { $('copyBtn').textContent = 'نسخ'; }, 1500);
   };
-
-  connect();
+  ws.onclose = () => {
+    $('pip').className = 'pip';
+    $('statusText').textContent = 'جارٍ إعادة الاتصال بالموقع...';
+    setTimeout(connect, 3000);
+  };
+  ws.onerror = () => {};
+}
+connect();
 </script>
 </body>
 </html>
